@@ -1,10 +1,10 @@
-import type {Game, Move} from 'boardgame.io'
-import {INVALID_MOVE} from 'boardgame.io/core'
+import type { Game, Move } from 'boardgame.io'
+import { INVALID_MOVE } from 'boardgame.io/core'
 
 export type GameState = {
   cells: (string | null)[]
   availableStones: {
-    [key: string]: {0: number; 1: number; 2: number}
+    [key: string]: { 0: number; 1: number; 2: number }
   }
 }
 
@@ -37,7 +37,7 @@ function IsDraw(G: GameState) {
   )
 }
 
-const move: Move<GameState> = ({G, ctx}, id, value: '0' | '1' | '2') => {
+const move: Move<GameState> = ({ G, ctx }, id, value: '0' | '1' | '2') => {
   if (G.availableStones[ctx.currentPlayer][value] === 0) {
     return INVALID_MOVE
   }
@@ -58,8 +58,8 @@ export const TicTacToe: Game<GameState> = {
     return {
       cells: Array(9).fill(null),
       availableStones: {
-        0: {0: 4, 1: 3, 2: 2},
-        1: {0: 4, 1: 3, 2: 2},
+        0: { 0: 4, 1: 3, 2: 2 },
+        1: { 0: 4, 1: 3, 2: 2 },
       },
     }
   },
@@ -70,12 +70,47 @@ export const TicTacToe: Game<GameState> = {
   moves: {
     clickCell: move,
   },
-  endIf: ({G, ctx}) => {
+  endIf: ({ G, ctx }) => {
     if (IsVictory(G.cells)) {
-      return {winner: ctx.currentPlayer}
+      return { winner: ctx.currentPlayer }
     }
     if (IsDraw(G)) {
-      return {draw: true}
+      return { draw: true }
     }
+  },
+  ai: {
+    enumerate: (G, ctx) => {
+      const allSizes = ['0', '1', '2'] as ('0' | '1' | '2')[]
+      const allCells = Array(9)
+        .fill(null)
+        .map((_, i) => i)
+      const allMoves = allSizes.flatMap((size) =>
+        allCells.map((cell) => ({ size, cell }))
+      )
+
+      const validMoves = allMoves.filter((move) => {
+        const value = move.size
+        const id = move.cell
+
+        if (G.availableStones[ctx.currentPlayer][value] === 0) {
+          return false
+        }
+        if (G.cells[id] !== null) {
+          const stoneSize = G.cells[id].split('-')[1]
+          if (stoneSize === null) {
+            return false
+          }
+          if (stoneSize >= value) {
+            return false
+          }
+        }
+        return true
+      })
+
+      return validMoves.map((move) => ({
+        move: 'clickCell',
+        args: [move.cell, move.size],
+      }))
+    },
   },
 }
