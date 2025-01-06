@@ -58,8 +58,8 @@ export const TicTacToe: Game<GameState> = {
     return {
       cells: Array(9).fill(null),
       availableStones: {
-        0: {0: 3, 1: 3, 2: 3},
-        1: {0: 3, 1: 3, 2: 3},
+        0: {0: 4, 1: 3, 2: 2},
+        1: {0: 4, 1: 3, 2: 2},
       },
     }
   },
